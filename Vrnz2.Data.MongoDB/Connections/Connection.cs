@@ -38,6 +38,8 @@ namespace Vrnz2.Data.MongoDB.Connections
         {
             foreach (var item in _connections)
                 item.Value.MongoClient = null;
+
+            _connections.Clear();
         }
 
         public MongoClientHelper GetClient(Guid connectionId)
@@ -46,6 +48,17 @@ namespace Vrnz2.Data.MongoDB.Connections
                 return client;
             else
                 return default(MongoClientHelper);
+        }
+
+        public void StopClient(Guid connectionId)
+        {
+            var client = GetClient(connectionId);
+
+            if (client != null) 
+            {
+                _connections.Remove(connectionId);
+                client = null;
+            }
         }
     }
 }

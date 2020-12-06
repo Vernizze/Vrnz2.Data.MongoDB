@@ -8,5 +8,6 @@ namespace Vrnz2.Data.MongoDB.Interfaces.Connections
         : IDisposable
     {
         MongoClientHelper GetClient(Guid connectionId);
+        void StopClient(Guid connectionId);
     }
 }

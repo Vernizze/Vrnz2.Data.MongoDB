@@ -38,7 +38,8 @@ namespace Vrnz2.Data.MongoDB
         #region Methods 
 
         public void Dispose()
-            => this._connection.Dispose();
+            => this._connection.StopClient(ConnectionId);
+
 
         public async Task Add<TEntity>(TEntity entity)
         {

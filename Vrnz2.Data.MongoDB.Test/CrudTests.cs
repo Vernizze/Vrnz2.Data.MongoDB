@@ -9,7 +9,7 @@ namespace Vrnz2.Data.MongoDB.Test
         [Fact]
         public async Task Add()
         {
-            var connectionString = "mongodb://{USER}:{PWD}@localhost:32772/Challenge";
+            var connectionString = "mongodb://challenge_user:challenge202012@localhost:32772/Challenge";
 
             var client = new Client
             {
