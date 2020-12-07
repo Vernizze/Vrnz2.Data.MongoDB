@@ -17,19 +17,22 @@ namespace Vrnz2.Data.MongoDB.Connections
 
         #endregion
 
-        private Connection(Guid connectionId, string database, string collection, string connection_string)
+        private Connection() { }
+
+        private void CreateClient(Guid connectionId, string database, string collection, string connection_string) 
         {
             lock (this._lock)
             {
-                var client = new MongoClient(connection_string);
-
-                _connections.Add(connectionId, new MongoClientHelper { Database = database, Collection = collection, MongoClient = client });
+                if (!_connections.TryGetValue(connectionId, out _))
+                    _connections.Add(connectionId, new MongoClientHelper { Database = database, Collection = collection, MongoClient = new MongoClient(connection_string) });
             }
         }
 
         public static Connection GetInstance(Guid connectionId, string database, string collection, string connection_string)
         {
-            _instance = _instance ?? new Connection(connectionId, database, collection, connection_string);
+            _instance = _instance ?? new Connection();
+
+            _instance.CreateClient(connectionId, database, collection, connection_string);
 
             return _instance;
         }
