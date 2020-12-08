@@ -67,6 +67,12 @@ namespace Vrnz2.Data.MongoDB
                 return await rep.GetMany(expression, sortDefinition, limit);
         }
 
+        public async Task<IList<TEntity>> GetMany<TEntity>(string filter)
+        {
+            using (var rep = new Persistence(ConnectionId, this._connection))
+                return await rep.GetMany<TEntity>(filter);
+        }
+
         public async Task Remove<TEntity>(TEntity entity)
             where TEntity
                 : IMongoDbEntity

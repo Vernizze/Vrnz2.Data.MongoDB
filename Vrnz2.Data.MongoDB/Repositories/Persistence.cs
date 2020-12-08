@@ -67,6 +67,15 @@ namespace Vrnz2.Data.MongoDB.Repositories
             return result.ToList();
         }
 
+        public async Task<IList<TEntity>> GetMany<TEntity>(string filter)
+        {
+            var result = await this._database
+                .GetCollection<TEntity>(this._collectionName)
+                .FindAsync(filter);
+
+            return result.ToList();
+        }
+
         public async Task Remove<TEntity>(TEntity entity)
             where TEntity
                 : IMongoDbEntity
