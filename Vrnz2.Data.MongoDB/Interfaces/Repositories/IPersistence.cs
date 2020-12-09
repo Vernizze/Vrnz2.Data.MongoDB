@@ -15,5 +15,6 @@ namespace Vrnz2.Data.MongoDB.Interfaces.Repositories
         Task<IList<TEntity>> GetMany<TEntity>(string filter);
         Task Remove<TEntity>(TEntity entity) where TEntity : IMongoDbEntity;
         Task Update<TEntity>(TEntity entity) where TEntity : IMongoDbEntity;
+        Task Update<TEntity, TField>(Expression<Func<TEntity, bool>> exp, Expression<Func<TEntity, TField>> field, TField value) where TEntity : IMongoDbEntity;
     }
 }

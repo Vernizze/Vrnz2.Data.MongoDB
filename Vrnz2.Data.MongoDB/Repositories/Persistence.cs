@@ -87,6 +87,21 @@ namespace Vrnz2.Data.MongoDB.Repositories
                 : IMongoDbEntity
             => await this._database.GetCollection<TEntity>(this._collectionName).ReplaceOneAsync(e => e.Id == entity.Id, entity);
 
+        public async Task Update<TEntity, TField>(Expression<Func<TEntity, bool>> exp, Expression<Func<TEntity, TField>> field, TField value)
+            where TEntity
+                : IMongoDbEntity
+        {
+            var filter = Builders<TEntity>.Filter.Where(exp);
+            var update = Builders<TEntity>.Update.Set(field, value);
+
+            await this._database.GetCollection<TEntity>(this._collectionName).UpdateManyAsync(filter, update);
+        }
+
         #endregion
+    }
+
+    public class Updates<TEntity>
+    {
+        public Expression<Func<TEntity, bool>> Expression { get; set; }
     }
 }

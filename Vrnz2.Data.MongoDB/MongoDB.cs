@@ -89,6 +89,14 @@ namespace Vrnz2.Data.MongoDB
                 await rep.Update(entity);
         }
 
+        public async Task Update<TEntity, TField>(Expression<Func<TEntity, bool>> exp, Expression<Func<TEntity, TField>> field, TField value)
+            where TEntity
+                : IMongoDbEntity
+        {
+            using (var rep = new Persistence(ConnectionId, this._connection))
+                await rep.Update(exp, field, value);
+        }
+
         #endregion
     }
 }
