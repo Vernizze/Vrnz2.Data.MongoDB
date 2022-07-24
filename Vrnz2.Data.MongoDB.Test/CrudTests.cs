@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Vrnz2.Data.MongoDB.Entities.Base;
 using Xunit;
+using Newtonsoft.Json;
 
 namespace Vrnz2.Data.MongoDB.Test
 {
@@ -9,6 +10,12 @@ namespace Vrnz2.Data.MongoDB.Test
         [Fact]
         public async Task Add()
         {
+            var bla = "{'Nome':'Carlos'}";
+
+            string json2 = @"{'Name':'Mike'}";
+            var customer2 = JsonConvert.DeserializeAnonymousType(json2, new { Name = "" });
+
+
             var connectionString = "mongodb://challenge_user:challenge202012@localhost:32772/Challenge";
 
             var client = new Client

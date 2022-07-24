@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Vrnz2.Data.MongoDB.Interfaces.Connections;
 using Vrnz2.Data.MongoDB.Interfaces.Repositories;
+using Vrnz2.Data.MongoDB.VOs;
 
 namespace Vrnz2.Data.MongoDB.Repositories
 {
@@ -23,11 +24,11 @@ namespace Vrnz2.Data.MongoDB.Repositories
 
         #region Constructors
 
-        public Persistence(Guid connectionId, IConnection conn)
+        public Persistence(IConnection conn)
         {
             this._conn = conn;
 
-            var mongoClient = this._conn.GetClient(connectionId);
+            var mongoClient = this._conn.GetClient();
 
             this._database = mongoClient.MongoClient.GetDatabase(mongoClient.Database);
             this._collectionName = mongoClient.Collection;
@@ -65,6 +66,71 @@ namespace Vrnz2.Data.MongoDB.Repositories
                 .FindAsync(filterDefinition, findOption);
 
             return result.ToList();
+
+        }
+        public async Task<IList<TEntity>> GetManyWithPage<TEntity>(Expression<Func<TEntity, bool>> filter, int page, int pageSize, string sortField = null, bool ascending = true)
+        {
+            var filterDefinition = Builders<TEntity>.Filter.Where(filter);
+
+            var result = this._database
+                .GetCollection<TEntity>(this._collectionName)
+                .Find(filterDefinition, null);
+
+            if (!string.IsNullOrEmpty(sortField))
+            {
+                if (ascending)
+                    result.Sort(Builders<TEntity>.Sort.Ascending(sortField));
+                else
+                    result.Sort(Builders<TEntity>.Sort.Descending(sortField));
+            }
+
+            if (page == 0 || pageSize == 0)
+                return await result.ToListAsync();
+
+            return await result.Skip((page - 1) * pageSize)
+                         .Limit(pageSize)
+                         .ToListAsync();
+        }
+        public async Task<IList<TEntity>> GetManyWithPage<TEntity>(ParamValue param)
+        {
+            var result = this._database
+             .GetCollection<TEntity>(this._collectionName)
+             .Find(param.Criteria);
+
+            if (!string.IsNullOrEmpty(param.SortDefinition))
+            {
+                if (param.Ascending)
+                    result.Sort(Builders<TEntity>.Sort.Ascending(param.SortDefinition));
+                else
+                    result.Sort(Builders<TEntity>.Sort.Descending(param.SortDefinition));
+            }
+
+            if (param.Page == 0 || param.PageSize == 0)
+                return await result.ToListAsync();
+
+            return await result.Skip((param.Page - 1) * param.PageSize)
+                         .Limit(param.PageSize)
+                         .ToListAsync();
+        }
+
+        public async Task<long> GetCount<TEntity>(Expression<Func<TEntity, bool>> filter)
+        {
+            var filterDefinition = Builders<TEntity>.Filter.Where(filter);
+
+            var result = this._database
+                .GetCollection<TEntity>(this._collectionName)
+                .Find(filterDefinition, null);
+
+            return await result.CountDocumentsAsync();
+        }
+
+        public async Task<long> GetCount<TEntity>(string filter)
+        {
+            var result = this._database
+                .GetCollection<TEntity>(this._collectionName)
+                .Find(filter);
+
+            return await result.CountDocumentsAsync();
         }
 
         public async Task<IList<TEntity>> GetMany<TEntity>(string filter)
@@ -75,7 +141,6 @@ namespace Vrnz2.Data.MongoDB.Repositories
 
             return result.ToList();
         }
-
         public async Task Remove<TEntity>(TEntity entity)
             where TEntity
                 : IMongoDbEntity
@@ -96,6 +161,12 @@ namespace Vrnz2.Data.MongoDB.Repositories
 
             await this._database.GetCollection<TEntity>(this._collectionName).UpdateManyAsync(filter, update);
         }
+
+        public Task UpdateManyAsync<TEntity>(Expression<Func<TEntity, bool>> exp, UpdateDefinition<TEntity> update)
+             where TEntity : IMongoDbEntity
+            => this._database
+                    .GetCollection<TEntity>(this._collectionName)
+                        .UpdateManyAsync(Builders<TEntity>.Filter.Where(exp), update);
 
         #endregion
     }
